@@ -3,16 +3,26 @@ import ShipReducer from "./ShipReducer";
 const initialState = {
   currentShipStart: 0,
   currentShipDirection: 1,
+  currentShip: [],
   currentShipNo: 0,
   shipDisplay: [],
-  shipHit: [],
+  hitDisplay: [],
+  shipSunk: [],
 };
 const ShipContext = React.createContext();
 export const ShipProvider = ({ children }) => {
   const [state, dispatch] = useReducer(ShipReducer, initialState);
   useEffect(() => {
-    addDisplay();
+    addNewShip();
   }, [state.currentShipStart]);
+
+  useEffect(() => {
+    sunkShip();
+  }, [hitDisplay]);
+
+  const sunkShip = () => {
+    dispatch({ type: "SUNK_SHIP" });
+  };
 
   const changeDirection = () => {
     dispatch({ type: "CHANGE_DIRECTION" });
@@ -21,6 +31,9 @@ export const ShipProvider = ({ children }) => {
     dispatch({ type: "SET_START", payload: item });
   };
 
+  const addNewShip = () => {
+    dispatch({ type: "ADD_NEW" });
+  };
   const addDisplay = () => {
     dispatch({ type: "ADD_DISPLAY" });
   };
@@ -35,6 +48,8 @@ export const ShipProvider = ({ children }) => {
         changeDirection,
         setStart,
         hitDisplay,
+        addDisplay,
+        sunkShip,
       }}
     >
       {children}

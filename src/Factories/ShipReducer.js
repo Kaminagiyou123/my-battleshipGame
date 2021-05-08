@@ -7,12 +7,22 @@ const ShipReducer = (state, action) => {
   }
   if (action.type === "HIT_DISPLAY") {
     const a = parseInt(action.payload);
-    if (state.shipDisplay.includes.a && !state.shipHit.includes.a) {
-      return { ...state, shipHit: state.shipHit.push(a) };
+    let newHit = [...state.hitDisplay];
+    newHit.push(a);
+    return { ...state, hitDisplay: newHit };
+  }
+  if (action.type === "SUNK_SHIP") {
+    let checker = (arr, target) => target.every((v) => arr.includes(v));
+    for (let i = 0; i < 5; i++) {
+      if (checker(state.hitDisplay, state.shipDisplay[i])) {
+        const newSunk = [...state.shipSunk].push(i);
+        return { ...state, shipSunk: [...newSunk] };
+      }
     }
     return { ...state };
   }
-  if (action.type === "ADD_DISPLAY") {
+  if (action.type === "ADD_NEW") {
+    //determine size of the ship next
     let length;
     switch (state.currentShipNo) {
       case 0:
@@ -33,6 +43,7 @@ const ShipReducer = (state, action) => {
       default:
         return { ...state };
     }
+    // check no overflow
     let a = state.currentShipStart;
     if (
       (state.currentShipDirection === 1 && a % 10 < 11 - length) ||
@@ -43,19 +54,33 @@ const ShipReducer = (state, action) => {
         arr.push(a);
         a += state.currentShipDirection;
       }
-      const filteredArray = state.shipDisplay.filter((value) =>
-        arr.includes(value)
-      );
+      //check no overlap with previous ships
+      const filteredArray = state.shipDisplay
+        .flat()
+        .filter((value) => arr.includes(value));
       if (filteredArray.length === 0) {
         return {
           ...state,
-          shipDisplay: state.shipDisplay.push(...arr),
-          currentShipNo: state.currentShipNo + 1,
+          currentShip: arr,
         };
       }
     }
     return { ...state };
   }
+
+  if (action.type === "ADD_Display") {
+    let newDisplay = [...state.currentDisplay];
+    newDisplay.push(state.currentShip);
+    return {
+      ...state,
+      currentShipStart: 0,
+      currentShipDirection: 1,
+      currentShip: [],
+      currentShipNo: state.currentShipNo + 1,
+      shipDisplay: newDisplay,
+    };
+  }
+
   throw new Error(`No Matching "${action.type}" - action type`);
 };
 
